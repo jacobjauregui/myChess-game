@@ -1,118 +1,60 @@
 import tkinter as tk
-import time
-import gameSet 
-import gameRules
-
-class ChessEngine:
-    def __init__(self, square_size):
-        self.square_size = square_size
+import gameSet as sets
+class Interface:
+    def __init__(self, size):
+        self.size = size 
+        self.bd = sets.board
         self.assets = {}
-         
-        self.gs = gameSet.PiecesSet()
-        self.bd = gameSet.Board()
-        
         self.window = tk.Tk()
         self.window.title("JakeChess")
-        self.window.iconbitmap("chessicon.ico")
-        self.window.geometry("550x550")
+        self.window.iconbitmap("./assets/chessicon.ico")
+        self.window.geometry(f"{(self.size+1)*8}x{(self.size+1)*8}")
         self.window.resizable(True, True)
-        
-        self.interface = tk.Canvas(self.window, borderwidth=1, cursor="hand2")
+        self.interface = tk.Canvas(self.window, borderwidth=0, cursor="hand2")
         self.interface.pack(fill="both", expand=True)
         
-        self.play = gameRules.GameFlow("y")
-
     def __call__(self):
         self.window.mainloop()
-
+    
     def drawBoard(self):
-        for x in range(8):
-            for y in range(8):
-                if (x+y) % 2 == 0:
-                    self.interface.create_rectangle(
-                        x*self.square_size, 
-                        y*self.square_size, 
-                        (x+1)*self.square_size, 
-                        (y+1)*self.square_size, 
-                        fill="#f0d9b5"
-                    )
-                else:                                                                               
-                    self.interface.create_rectangle(
-                        x*self.square_size, 
-                        y*self.square_size, 
-                        (x+1)*self.square_size, 
-                        (y+1)*self.square_size, 
-                        fill="#b58863"
-                    )
-
-    def loadAssets(self):
-        pieces = ["bP", "bR", "bN", "bB", "bQ", "bK", "wP", "wR", "wN", "wB", "wQ", "wK"]
-        for piece in pieces:
-            self.assets[piece] = tk.PhotoImage(file="./assets/" + piece + ".png")
-
-    def showPieces(self):
-        for row, x in enumerate(self.gs.pieces):
-            for col, y in enumerate(x):
-                if y != "--":
-                    self.interface.create_image(
-                        (col+0.5)*self.square_size, 
-                        (row+0.5)*self.square_size,
-                        image=self.assets[y],
-                        anchor="center"
-                    )
+        for i in range(8):
+            for j in range(8):
+                if (i+j) % 2 == 0:
+                    self.interface.create_rectangle(i*self.size, j*self.size, (i+1)*self.size, (j+1)*self.size, fill="#f0d9b5")
+                else:
+                    self.interface.create_rectangle(i*self.size, j*self.size, (i+1)*self.size, (j+1)*self.size, fill="#b58863")
 
     def squareName(self):
-        for row, x in enumerate(self.bd.board):
-            for col, y in enumerate(x):
+        for i in range(8):
+            for j in range(8):
                 self.interface.create_text(
-                    (col+0.88)*self.square_size,
-                    (row+0.88)*self.square_size,
-                    text=str(y),
+                    (i+0.88)*self.size,
+                    (j+0.88)*self.size,
+                    text=(f"{self.bd[j][i][0]}{self.bd[j][i][1]}"),
                     anchor="center",
                 )
 
-    def showWClock(self):
-        self.interface.create_rectangle(60, 60, 120, 120, fill="#ffffff")
-        self.interface.create_text(90, 90, text=str(self.play.w_time), anchor="center")
+    def loadAssets(self):
+        pieces = ["bB", "bK", "bN", "bP", "bQ", "bR", "wB", "wK", "wN", "wP", "wQ", "wR"]
+        for piece in pieces:
+            self.assets[piece] = tk.PhotoImage(file ="./assets/" + piece + ".png")
 
-    def showBClock(self):
-        self.interface.create_rectangle(60, 60, 120, 120, fill="#616151")
-        self.interface.create_text(90, 90, text=str(self.play.b_time), anchor="center")
-        
-    def letsPlay(self):
-        if self.play.new_game == "y":
-            self.play.playing = True
-            self.play.current_turn = "white"
-            self.play.w_time = 300
-            self.play.b_time = 300
-            self.play.game_over = False
-            
-    def alternTurn(self):
-        while self.play.playing:
-            if self.play.current_turn == "white":
-                self.play.w_moves += 1
-                self.play.current_turn = "black"
-            elif self.play.current_turn == "black":
-                self.play.b_moves += 1
-                self.play.current_turn = "white"
+    def showPieces(self):
+        for x in range(8):
+            for y in range(8):
+                if self.bd[y][x][2] != "--":
+                    self.interface.create_image(
+                        (x+0.5)*self.size, 
+                        (y+0.5)*self.size,
+                        image=self.assets[self.bd[y][x][2]],
+                        anchor="center"
+                    )
+                    
+JakeChess = Interface(70)
 
-    def timeControl(self):
-        while self.play.playing:
-            if self.play.current_turn == "white" and self.play.w_time > 0:
-                    self.showWClock()
-                    self.play.w_time -= 1
-                    time.sleep(1)
-            elif self.play.current_turn == "black" and self.play.b_time > 0:
-                    self.showBClock()
-                    self.play.b_time -= 1
-                    time.sleep(1)
-
-JakeChess = ChessEngine(68)
 JakeChess.drawBoard()
+JakeChess.squareName()
 JakeChess.loadAssets()
 JakeChess.showPieces()
-JakeChess.squareName()
-JakeChess.letsPlay()
-JakeChess.timeControl()
 
 JakeChess()
