@@ -1,6 +1,6 @@
-__pycache__
-.vscode
-include
-Lib
-Scripts
+./__pycache__
+./.vscode
+./include
+./Lib
+./Scripts
 pyvenv.cfg
