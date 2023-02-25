@@ -2,6 +2,7 @@ import gameSet as gs
 import interface as itf
 import time as tm
 import tkinter as tk
+from tkinter import dnd
 
 gui = itf.Screens()
 gui.welcome()
@@ -92,42 +93,55 @@ def put_on_board(pz, sq):
     p = squares[sq].set_piece(pieces[pz])
     s = pieces[pz].set_position(squares[sq])
     c = cv[sq]
-    original_color = c.cget('bg')
-    c.bind('<Enter>', lambda event: hover(p, s, c, original_color))
+    binds(p, s, c)
     return p and s and c
 
 
-def hover(p, s, c, original_color):
-    if not p._selected == True:
-        p.set_position(s)
-        s.set_piece(p)
-        c.configure(cursor='hand2', bg='#f9d964')
-        c.bind('<Button-1>', lambda event: select_piece(p, c, original_color))
-        c.bind('<Leave>', lambda event: unhover(p, c, original_color))
+def binds(p, s, c):
+    original_color = c.cget('bg')
+    if p._selected == False:
+        c.bind('<Button-1>', lambda event: select_piece(p, s, c, original_color))
+        c.bind('<Enter>', lambda event: hover(p, s, c))
+        c.bind('<Leave>', lambda event: unhover(p, s, c, original_color))
     else:
-        p.set_position(s)
-        s.set_piece(p)
-        c.configure(cursor='hand2', bg='#f9d964')
-        c.bind('<Leave>', lambda event: unhover(p, c, original_color))
-        c.bind('<Button-1>', lambda event: unselect_piece(p, c, original_color))
+        c.bind('<Button-1>', lambda event: unselect_piece(p, s, c, original_color))
+        c.unbind('<Enter>', lambda event: hover(p, s, c))
+        c.unbind('<Leave>', lambda event: unhover(p, s, c, original_color))
     
-def unhover(p, c, original_color):
-    c.configure(cursor='arrow', bg=original_color)
+def hover(p, s, c):
+    p.set_position(s)
+    s.set_piece(p)
+    p.get_status()
+    c.configure(cursor='hand2', bg=cl.yellow)
+
+def unhover(p, s, c, original_color):
+    c.configure(cursor='hand2', bg=original_color)
 
 
-def select_piece(p, c, original_color):
-    if p._selected == True:
-        p.select()
-        c.bind('<Leave>', lambda event: unhover(p, c, cl.green))
-        c.bind('<Enter>', lambda event: hover(p, p._position, c, cl.green))
-        c.bind('<Button-1>', lambda event: unselect_piece(p, c, original_color))
-        p.get_status()
-    
-def unselect_piece(p, c, original_color):
-    c.configure(bg = original_color)
-    p.unselect()
+def select_piece(p, s, c, original_color):
+    original_color = c.cget('bg')
+    p.get_status()
     if not p._selected == True:
-        c.bind('<Button-1>', lambda event: select_piece(p, c))
+        original_color = c.cget('bg')
+        c.bind('<Enter>', lambda event: hover(p,  c, original_color))
+        c.bind('<Button-1>', lambda event: unselect_piece(p, s, c, original_color))
+        p.select()
+        c.configure(bg=cl.green)
+        c.bind('<Leave>' , lambda event: unhover(p, s, c, cl.green))
+    elif p._selected == True:
+        c.configure(bg=original_color)
+        
+        c.bind('<Leave>', lambda event: unhover(p, s, c, original_color))
+        c.bind('<Button-1>', lambda event: unselect_piece(p, s, c, original_color))
+        #c.bind('<Enter>', lambda event: o_hover(p, s, c))
+        #c.bind('<Leave>', lambda event: unhover(p, s, c, original_color))
+        #c.bind('<Button-1>', lambda event: unselect_piece(p, s, c, original_color))
+def unselect_piece(p, s, c, original_color):
+    if p._selected == True:
+        p.unselect()
+        c.configure(bg = original_color)
+        c.bind('<Button-1>', lambda event: select_piece(p, s, c, original_color))
+    #if not p._selected == True:
 
 
 '''
